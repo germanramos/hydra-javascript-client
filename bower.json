@@ -1,0 +1,10 @@
+{
+	"name": "hydra",
+	"version": "0.1.0",
+	"main": "./hydra.js",
+	"license": "MIT",
+	"ignore": [
+		".gitignore",
+		"*.md"
+	]
+}
