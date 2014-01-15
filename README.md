@@ -2,10 +2,9 @@
 
 Hydra client is a js file that should be included in a client project. 
 
-```
 In a website: 
 ```
-<script type="text/javascript" src="http://innotech.github.io/hydra/client/hydra.js"></script>
+ <script type="text/javascript" src="http://innotech.github.io/hydra/client/hydra.js"></script>
 ```
 
 It provides two functions:
