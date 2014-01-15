@@ -2,7 +2,12 @@
 	"name": "hydra",
 	"version": "0.1.0",
 	"main": "./hydra.js",
+	"description": "A super client for Hydra",
 	"license": "MIT",
+	"repository": { 
+		"type": "git", 
+		"url": "git://github.com/innotech/hydra-javascript-client.git" 
+	},
 	"ignore": [
 		".gitignore",
 		"*.md"
