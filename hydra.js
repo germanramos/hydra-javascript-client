@@ -16,87 +16,87 @@ var hydra = hydra || function () {
 
   var _Async = (function(){
     var tryCORS = (function() {
-        var _logger = (function(console){
-          if (console) {
-            return function(type, msg) {
-              if (console[type]) {
-                console[type](msg);
-              }
+      var _logger = (function(console){
+        if (console) {
+          return function(type, msg) {
+            if (console[type]) {
+              console[type](msg);
             }
-          } else {
-            return function(){return;}
           }
-        }(window.console));
+        } else {
+          return function(){return;}
+        }
+      }(window.console));
 
-        function _proccessResp(req, f_success) {
-          if (req.status === _HTTP_SUCCESS) {
-            if (req.responseText !== null) {
-              f_success(null, JSON.parse(req.responseText));
-            }
-            else {
-              f_success(null, null);
-            }
+      function _proccessResp(req, f_success) {
+        if (req.status === _HTTP_SUCCESS) {
+          if (req.responseText !== null) {
+            f_success(null, JSON.parse(req.responseText));
           }
           else {
-            f_success({ "status" : req.status, req : req }, null);
+            f_success(null, null);
           }
         }
+        else {
+          f_success({ "status" : req.status, req : req }, null);
+        }
+      }
 
-        function tryXDR(method, url, f_success, params) {
-          var req;
-          try {
-            req = new XDomainRequest();
-            req.open(method, url);
-            req.onerror = function() {
-              _proccessResp(req, f_success);
-            };
-            req.onload = function() {
-              _proccessResp(req, f_success);
-            };
-            req.onprogress = function(){return;};
-            req.ontimeout = function(){return;};
-            setTimeout(function(){
-              req.send(params);
-            }, 300);
-          } catch (e) {
-            _logger('info', 'CORS is not available.');
+      function tryXDR(method, url, f_success, params) {
+        var req;
+        try {
+          req = new XDomainRequest();
+          req.open(method, url);
+          req.onerror = function() {
+            _proccessResp(req, f_success);
+          };
+          req.onload = function() {
+            _proccessResp(req, f_success);
+          };
+          req.onprogress = function(){return;};
+          req.ontimeout = function(){return;};
+          setTimeout(function(){
+            req.send(params);
+          }, 300);
+        } catch (e) {
+          _logger('error', 'CORS is not available.');
+        }
+      }
+
+      function tryXHR(method, url, f_success, params) {
+        var req = new XMLHttpRequest();
+        req.open(method, url, true);
+        req.onreadystatechange  = function() {
+          if (req.readyState === 0 || req.readyState === 4) {
+            _proccessResp(req, f_success);
           }
         }
-
-        function tryXHR(method, url, f_success, params) {
-          var req = new XMLHttpRequest();
-          req.open(method, url, true);
-          req.onreadystatechange  = function() {
-            if (req.readyState === 0 || req.readyState === 4) {
-              _proccessResp(req, f_success);
-            }
-          }
-          if(params) {
-            req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-          }
-          req.send(params);
+        if(params) {
+          req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         }
+        req.send(params);
+      }
 
-        function chooseMethod() {
-          var reqObj = null;
-          if(XMLHttpRequest) {
-            reqObj = tryXHR;
-            if((new XMLHttpRequest()).withCredentials === undefined) {
-              reqObj = null;
-            }
+      function chooseMethod() {
+        var reqObj = null;
+        if(XMLHttpRequest) {
+          reqObj = tryXHR;
+          if((new XMLHttpRequest()).withCredentials === undefined) {
+            reqObj = null;
           }
-          if(reqObj === null) {
-            if (typeof XDomainRequest !== 'undefined') {
-              reqObj = tryXDR;
-            } else {
-              _logger('info', 'Objects XMLHttpRequest & XDomainRequest not availables');
-            }
-          }
-          return reqObj;
         }
+        if(reqObj === null) {
+          if (typeof XDomainRequest !== 'undefined') {
+            reqObj = tryXDR;
+          } else {
+            _logger('error', 'Objects XMLHttpRequest & XDomainRequest not availables');
+          }
+        }
+        return reqObj;
+      }
 
-        return chooseMethod();
-      }());
+      return chooseMethod();
+    }());
 
     if (tryCORS !== null) {
       return tryCORS;
