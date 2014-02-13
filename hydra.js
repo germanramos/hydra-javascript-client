@@ -16,6 +16,18 @@ var hydra = hydra || function () {
 
   var _Async = (function(){
     var tryCORS = (function() {
+        var _logger = (function(console){
+          if (console) {
+            return function(type, msg) {
+              if (console[type]) {
+                console[type](msg);
+              }
+            }
+          } else {
+            return function(){return;}
+          }
+        }(window.console));
+
         function _proccessResp(req, f_success) {
           if (req.status === _HTTP_SUCCESS) {
             if (req.responseText !== null) {
@@ -47,9 +59,7 @@ var hydra = hydra || function () {
               req.send(params);
             }, 300);
           } catch (e) {
-            if (window.console && window.console.error) {
-              console.error('Fatal error, CORS is not available.');
-            }
+            _logger('info', 'CORS is not available.');
           }
         }
 
@@ -64,8 +74,8 @@ var hydra = hydra || function () {
           if(params) {
             req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
           }
-            req.send(params);
-          }
+          req.send(params);
+        }
 
         function chooseMethod() {
           var reqObj = null;
@@ -78,8 +88,8 @@ var hydra = hydra || function () {
           if(reqObj === null) {
             if (typeof XDomainRequest !== 'undefined') {
               reqObj = tryXDR;
-            } else if (console && console.error) {
-              console.error('Fatal error, objects XMLHttpRequest & XDomainRequest not availables');
+            } else {
+              _logger('info', 'Objects XMLHttpRequest & XDomainRequest not availables');
             }
           }
           return reqObj;
@@ -94,7 +104,6 @@ var hydra = hydra || function () {
       return function() {return;};
     }
   }());
-
 
   //////////////////////////
   //     HYDRA  ENTRY     //
@@ -125,7 +134,6 @@ var hydra = hydra || function () {
     _GetHydraServers();
     setInterval(_GetHydraServers, hydraTimeOut);
   }
-
 
   function _GetHydraServers() {
     _Async('GET', hydraServers.list[0] + '/app/hydra',
