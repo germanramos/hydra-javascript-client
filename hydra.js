@@ -14,6 +14,88 @@ var hydra = hydra || function () {
 		_HTTP_SUCCESS		= 200,
 		_HTTP_BAD_REQUEST	= 400;
 
+	var _Async = (function(){
+		var	tryCORS = (function() {
+				function _proccessResp(req, f_success) {
+					if (req.status === _HTTP_SUCCESS) {
+						if (req.responseText !== null) {
+							f_success(null, JSON.parse(req.responseText));
+						}
+						else {
+							f_success(null, null);
+						}
+					}
+					else {
+						f_success({ "status" : req.status, req : req }, null);
+					}
+				}
+
+				function tryXDR(method, url, f_success, params) {
+					var req;
+					try {
+						req = new XDomainRequest();
+						req.open(method, url);
+						req.onerror = function() {
+							_proccessResp(req, f_success);
+						};
+						req.onload = function() {
+							_proccessResp(req, f_success);
+						};
+						req.onprogress = function(){return;};
+						req.ontimeout = function(){return;};
+						setTimeout(function(){
+							req.send(params);
+						}, 300);
+					} catch (e) {
+						if (window.console && window.console.error) {
+							console.error('Fatal error, CORS is not available.');
+						}
+					}
+				}
+
+				function tryXHR(method, url, f_success, params) {
+					var req = new XMLHttpRequest();
+					req.open(method, url, true);
+					req.onreadystatechange  = function() {
+						if (req.readyState === 0 || req.readyState === 4) {
+							_proccessResp(req, f_success);
+						}
+					}
+					if(params) {
+						req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+					}
+						req.send(params);
+					}
+
+				function chooseMethod() {
+					var reqObj = null;
+					if(XMLHttpRequest) {
+						reqObj = tryXHR;
+						if((new XMLHttpRequest()).withCredentials === undefined) {
+							reqObj = null;
+						}
+					}
+					if(reqObj === null) {
+						if (typeof XDomainRequest !== 'undefined') {
+							reqObj = tryXDR;
+						} else if (console && console.error) {
+							console.error('Fatal error, objects XMLHttpRequest & XDomainRequest not availables');
+						}
+					}
+					return reqObj;
+				}
+
+				return chooseMethod();
+			}());
+
+		if (tryCORS !== null) {
+			return tryCORS;
+		} else {
+			return function() {return;};
+		}
+	}());
+
+
 	//////////////////////////
 	//     HYDRA  ENTRY     //
 	//////////////////////////
@@ -51,12 +133,12 @@ var hydra = hydra || function () {
 			if(!err) {
 				if (data.length > 0) {
 					hydraServers.list = data;
-					hydraServers.lastUpdate = Date.now();
+					hydraServers.lastUpdate = (new Date().getTime());
 				}
 
 				retryTimeout = null;
 			} else {
-				// In case hydra server doesn't reply, push it to the back 
+				// In case hydra server doesn't reply, push it to the back
 				// of the list and try another
 				if(!retryTimeout) {
 					_CycleHydraServer();
@@ -75,7 +157,7 @@ var hydra = hydra || function () {
 		var getFromServer = overrideCache ||
 							!(appId in appServers) ||
 							appServers[appId].list.length === 0 ||
-							(Date.now() - appServers[appId].lastUpdate > appTimeOut);
+							((new Date().getTime()) - appServers[appId].lastUpdate > appTimeOut);
 
 		if(getFromServer) {
 			_Async('GET', hydraServers.list[0] + '/app/'+ appId,
@@ -84,7 +166,7 @@ var hydra = hydra || function () {
 					// Store the app in the local cache
 					appServers[appId] = {
 						list: data,
-						lastUpdate: Date.now()
+						lastUpdate: (new Date().getTime())
 					};
 
 					retryTimeout = null;
@@ -94,7 +176,7 @@ var hydra = hydra || function () {
 					if(err.status === _HTTP_BAD_REQUEST) {
 						f_callback(err, null);
 					} else {
-						// In case hydra server doesn't reply, push it to the back 
+						// In case hydra server doesn't reply, push it to the back
 						// of the list and try another
 						if(!retryTimeout) {
 							_CycleHydraServer();
@@ -120,63 +202,6 @@ var hydra = hydra || function () {
 	//////////////////////////
 	//    GENERIC UTILS     //
 	//////////////////////////
-	function _InstanceHttpReq(){
-		var httpRequest;
-		if ( window.XMLHttpRequest ) {
-			httpRequest = new XMLHttpRequest();
-		}
-		else if ( window.ActiveXObject ) {
-			try {
-				httpRequest = new ActiveXObject('MSXML2.XMLHTTP');
-			}
-			catch (err1) {
-				try {
-					httpRequest = new ActiveXObject('Microsoft.XMLHTTP');
-				}
-				catch (err2) {
-					if ( window.console && window.console.error ) {
-						console.error('Fatal error', err2);
-					}
-				}
-			}
-		}
-		if ( !httpRequest ) {
-			if ( window.console && window.console.error ) {
-				console.error('Fatal error, object httpRequest is not available');
-			}
-		}
-
-		return httpRequest;
-	}
-
-	function _Async(p_method, p_url, f_success, data) {
-		var req = _InstanceHttpReq();
-		req.open(p_method, p_url+'?_='+(new Date().getTime()), true);
-		req.onreadystatechange  = function() {
-			if ( req.readyState === 0 || req.readyState === 4 ){
-				if (req.status === _HTTP_SUCCESS) {
-					if ( req.responseText !== null ) {
-						f_success( null, JSON.parse(req.responseText) );
-					}
-					else {
-						f_success(null, null);
-					}
-				}
-				else {
-					f_success({ "status" : req.status, req : req },null);
-				}
-			}
-		};
-
-		if(data)
-		{
-			req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-			data = JSON.stringify(data);
-		}
-
-		req.send(data);
-	}
-
 	function _GetJSUrl(file){
 		var scripts = document.getElementsByTagName('script');
 		for (var i = 0, L = scripts.length; i<L; i++){
