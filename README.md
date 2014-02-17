@@ -43,7 +43,8 @@ Alejandro Penedo &lt;icedfiend@gmail.com&gt;
 Jose María San José &lt;josem.sanjose@gmail.com&gt;
 
 Contributors:  
-Gonzalo Ruiz de Villa &lt;gonzaloruizdevilla@gmail.com&gt;
+Raimundo Alegria &lt;rai22474@gmail.com&gt;  
+Gonzalo Ruiz de Villa &lt;gonzaloruizdevilla@gmail.com&gt;  
 Alberto Tena &lt;alberto.tena@adesis.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
