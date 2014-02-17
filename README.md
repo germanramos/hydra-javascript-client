@@ -42,8 +42,9 @@ Luis Mesas &lt;luismesas@gmail.com&gt;
 Alejandro Penedo &lt;icedfiend@gmail.com&gt;  
 Jose María San José &lt;josem.sanjose@gmail.com&gt;
 
-Contributors:
+Contributors:  
 Gonzalo Ruiz de Villa &lt;gonzaloruizdevilla@gmail.com&gt;
+Alberto Tena &lt;alberto.tena@adesis.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
